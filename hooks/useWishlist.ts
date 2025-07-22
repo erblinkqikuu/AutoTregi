@@ -98,7 +98,7 @@ export const useWishlist = () => {
       }
 
       const response = await fetch(`http://127.0.0.1:8000/api/user/add-to-wishlist/${carId}`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
@@ -131,7 +131,7 @@ export const useWishlist = () => {
       }
 
       const response = await fetch(`http://127.0.0.1:8000/api/user/remove-wishlist/${carId}`, {
-        method: 'GET',
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
