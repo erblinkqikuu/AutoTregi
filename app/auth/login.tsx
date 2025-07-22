@@ -42,7 +42,7 @@ export default function LoginScreen() {
     setMessageType('');
 
     try {
-      const response = await fetch('https://autotregi.com/api/store-login', {
+      const response = await fetch('http://127.0.0.1:8000/api/store-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,27 +64,35 @@ export default function LoginScreen() {
         // Log user data to console
         console.log('=== USER LOGIN SUCCESS ===');
         console.log('Full API Response:', data);
-        console.log('User Data:', data.user || data);
-        console.log('Token:', data.token || 'No token provided');
+        console.log('User Data:', data.user);
+        console.log('Access Token:', data.access_token);
+        console.log('Token Type:', data.token_type);
+        console.log('Expires In:', data.expires_in);
         console.log('========================');
         
-        // Save user data to localStorage (for web) or AsyncStorage equivalent
+        // Save auth data to localStorage (for web) or AsyncStorage equivalent
         if (Platform.OS === 'web') {
-          localStorage.setItem('authToken', data.token || '');
-          localStorage.setItem('userData', JSON.stringify(data.user || data));
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('token_type', data.token_type);
+          localStorage.setItem('expires_in', data.expires_in.toString());
+          localStorage.setItem('token_created_at', Date.now().toString());
+          localStorage.setItem('userData', JSON.stringify(data.user));
         }
         
         // Create user object for context
         const userData = {
-          id: (data.user?.id || data.id || '1').toString(),
-          email: data.user?.email || data.email || formData.email,
-          firstName: data.user?.name || data.name || data.user?.firstName || data.firstName || 'User',
-          lastName: data.user?.lastName || data.lastName || '',
-          phone: data.user?.phone || data.phone || '',
-          location: data.user?.location || data.location || data.user?.address || data.address || '',
-          createdAt: data.user?.created_at ? new Date(data.user.created_at) : new Date(),
-          isVerified: data.user?.is_verified || data.is_verified || data.user?.isVerified || data.isVerified || false,
-          avatar: data.user?.image ? `https://autotregi.com/${data.user.image}` : data.user?.avatar || data.avatar,
+          id: data.user.id.toString(),
+          email: formData.email,
+          firstName: data.user.name || 'User',
+          lastName: '',
+          phone: data.user.phone || '',
+          location: data.user.address || '',
+          createdAt: new Date(),
+          isVerified: data.user.kyc_status === 'enable',
+          avatar: data.user.image ? `https://autotregi.com/${data.user.image}` : null,
+          accessToken: data.access_token,
+          tokenType: data.token_type,
+          expiresIn: data.expires_in,
         };
 
         console.log('Processed User Data for Context:', userData);

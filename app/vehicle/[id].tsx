@@ -42,6 +42,7 @@ interface CarDetail {
   images?: string[];
   video_url?: string;
   views?: number;
+  agent_id?: number;
   seller?: {
     id: string;
     name: string;
@@ -53,6 +54,29 @@ interface CarDetail {
     image?: string;
   };
   created_at: string;
+}
+
+interface Dealer {
+  id: number;
+  name: string;
+  username: string;
+  designation?: string;
+  image?: string;
+  status: string;
+  is_banned: string;
+  is_dealer: number;
+  address?: string;
+  email: string;
+  phone?: string;
+  kyc_status: string;
+  total_car: number;
+}
+
+interface DealersResponse {
+  dealers: {
+    current_page: number;
+    data: Dealer[];
+  };
 }
 
 interface ReviewData {
@@ -103,6 +127,8 @@ export default function VehicleDetailScreen() {
     term: 60,
   });
   const [relatedCars, setRelatedCars] = useState<CarDetail[]>([]);
+  const [dealerInfo, setDealerInfo] = useState<Dealer | null>(null);
+  const [loadingDealer, setLoadingDealer] = useState(false);
 
   // Gallery images state
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
@@ -115,6 +141,12 @@ export default function VehicleDetailScreen() {
       fetchCarGallery();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (carDetail?.agent_id) {
+      fetchDealerInfo(carDetail.agent_id);
+    }
+  }, [carDetail?.agent_id]);
 
   useEffect(() => {
     if (carDetail) {
@@ -130,7 +162,7 @@ export default function VehicleDetailScreen() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`https://autotregi.com/api/listing/${id}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/listing/${id}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -161,7 +193,7 @@ export default function VehicleDetailScreen() {
     try {
       setLoadingGallery(true);
       
-      const response = await fetch(`https://autotregi.com/api/user/car-gallery/${id}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/user/car-gallery/${id}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -194,9 +226,33 @@ export default function VehicleDetailScreen() {
     }
   };
 
+  const fetchDealerInfo = async (agentId: number) => {
+    setLoadingDealer(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/dealers', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data: DealersResponse = await response.json();
+        const dealer = data.dealers.data.find(d => d.id === agentId);
+        setDealerInfo(dealer || null);
+      }
+    } catch (error) {
+      console.error('Error fetching dealer info:', error);
+      setDealerInfo(null);
+    } finally {
+      setLoadingDealer(false);
+    }
+  };  
+
   const fetchRelatedCars = async () => {
     try {
-      const response = await fetch('https://autotregi.com/api/listings?page=1', {
+      const response = await fetch('http://127.0.0.1:8000/api/listings?page=1', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -273,8 +329,9 @@ export default function VehicleDetailScreen() {
   };
 
   const handleCall = () => {
-    if (carDetail.seller?.phone) {
-      const phoneUrl = `tel:${carDetail.seller.phone}`;
+    const phone = dealerInfo?.phone || carDetail.seller?.phone;
+    if (phone) {
+      const phoneUrl = `tel:${phone}`;
       Linking.openURL(phoneUrl).catch(() => {
         Alert.alert('Error', 'Unable to make phone call');
       });
@@ -282,8 +339,9 @@ export default function VehicleDetailScreen() {
   };
 
   const handleEmail = () => {
-    if (carDetail.seller?.email) {
-      const emailUrl = `mailto:${carDetail.seller.email}`;
+    const email = dealerInfo?.email || carDetail.seller?.email;
+    if (email) {
+      const emailUrl = `mailto:${email}`;
       Linking.openURL(emailUrl).catch(() => {
         Alert.alert('Error', 'Unable to open email');
       });
@@ -306,7 +364,7 @@ export default function VehicleDetailScreen() {
   };
 
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800';
+    if (!imagePath) return 'https://placehold.co/400x200/2a2b2b/525353?text=Loading...';
     const cleanPath = imagePath.replace(/\\/g, '/');
     return cleanPath.startsWith('http') ? cleanPath : `https://autotregi.com/${cleanPath}`;
   };
@@ -409,7 +467,7 @@ export default function VehicleDetailScreen() {
               <Image 
                 source={{ uri: getImageUrl(image) }} 
                 style={styles.mainImage}
-                defaultSource={{ uri: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800' }}
+                defaultSource={{ uri: 'https://placehold.co/400x200/2a2b2b/525353?text=Loading...' }}
               />
             </TouchableOpacity>
           ))}
@@ -587,37 +645,71 @@ export default function VehicleDetailScreen() {
       <Text style={styles.sectionTitle}>Contact Seller</Text>
       
       {/* Seller Info */}
-      <View style={styles.sellerCard}>
-        <View style={styles.sellerHeader}>
-          <Image
-            source={{ 
-              uri: carDetail.seller?.image 
-                ? getImageUrl(carDetail.seller.image)
-                : 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
-            }}
-            style={styles.sellerAvatar}
-          />
-          <View style={styles.sellerInfo}>
-            <Text style={styles.sellerName}>{carDetail.seller?.name || 'AutoSalloni Alberti'}</Text>
-            <Text style={styles.sellerType}>{carDetail.seller?.type || 'Dealer'}</Text>
-            <Text style={styles.sellerStats}>
-              {carDetail.seller?.total_cars || 15} cars • Joined {carDetail.seller?.joined_date || 'Jan 2023'}
-            </Text>
+      {loadingDealer ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#EF4444" />
+          <Text style={styles.loadingText}>Loading dealer info...</Text>
+        </View>
+      ) : (
+        <View style={styles.sellerCard}>
+          <View style={styles.sellerHeader}>
+            <Image
+              source={{ 
+                uri: dealerInfo?.image 
+                  ? getImageUrl(dealerInfo.image)
+                  : carDetail.seller?.image 
+                  ? getImageUrl(carDetail.seller.image)
+                  : 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+              }}
+              style={styles.sellerAvatar}
+            />
+            <View style={styles.sellerInfo}>
+              <Text style={styles.sellerName}>
+                {dealerInfo?.name || carDetail.seller?.name || 'AutoSalloni Alberti'}
+              </Text>
+              <Text style={styles.sellerType}>
+                {dealerInfo?.is_dealer === 1 ? 'Dealer' : carDetail.seller?.type || 'Dealer'}
+              </Text>
+              <Text style={styles.sellerStats}>
+                {dealerInfo?.total_car || carDetail.seller?.total_cars || 15} cars
+                {dealerInfo?.address && ` • ${dealerInfo.address}`}
+              </Text>
+              {dealerInfo?.kyc_status === 'enable' && (
+                <View style={styles.verifiedBadge}>
+                  <Shield size={12} color="#059669" />
+                  <Text style={styles.verifiedText}>Verified</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Contact Buttons */}
+          <View style={styles.contactButtons}>
+            <TouchableOpacity 
+              style={[
+                styles.contactButton, 
+                !(dealerInfo?.phone || carDetail.seller?.phone) && styles.contactButtonDisabled
+              ]} 
+              onPress={handleCall}
+              disabled={!(dealerInfo?.phone || carDetail.seller?.phone)}
+            >
+              <Phone size={20} color="#FFFFFF" />
+              <Text style={styles.contactButtonText}>Call</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[
+                styles.contactButton,
+                !(dealerInfo?.email || carDetail.seller?.email) && styles.contactButtonDisabled
+              ]} 
+              onPress={handleEmail}
+              disabled={!(dealerInfo?.email || carDetail.seller?.email)}
+            >
+              <Mail size={20} color="#FFFFFF" />
+              <Text style={styles.contactButtonText}>Email</Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Contact Buttons */}
-        <View style={styles.contactButtons}>
-          <TouchableOpacity style={styles.contactButton} onPress={handleCall}>
-            <Phone size={20} color="#FFFFFF" />
-            <Text style={styles.contactButtonText}>Call</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.contactButton} onPress={handleEmail}>
-            <Mail size={20} color="#FFFFFF" />
-            <Text style={styles.contactButtonText}>Email</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      )}
 
       {/* Contact Form */}
       <View style={styles.contactForm}>
@@ -1231,6 +1323,26 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  contactButtonDisabled: {
+    backgroundColor: '#6B7280',
+    opacity: 0.6,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    gap: 4,
+  },
+  verifiedText: {
+    fontSize: 10,
+    color: '#059669',
+    fontWeight: '500',
   },
   contactForm: {
     gap: 12,

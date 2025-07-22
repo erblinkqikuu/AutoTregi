@@ -135,8 +135,8 @@ export default function DealerDetailScreen() {
       setError(null);
       
       const url = page > 1 
-        ? `https://autotregi.com/api/dealer/${slug}?page=${page}`
-        : `https://autotregi.com/api/dealer/${slug}`;
+        ? `http://127.0.0.1:8000/api/dealer/${slug}?page=${page}`
+        : `http://127.0.0.1:8000/api/dealer/${slug}`;
       
       const response = await fetch(url, {
         method: 'GET',

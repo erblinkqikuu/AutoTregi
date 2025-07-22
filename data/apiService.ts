@@ -86,7 +86,7 @@ export interface TransformedVehicle {
 }
 
 class ApiService {
-  private baseUrl = 'https://autotregi.com';
+  private baseUrl = 'http://127.0.0.1:8000';
   private apiUrl = `${this.baseUrl}/api/listings`;
   private maxRetries = 3;
   private retryDelay = 1000; // 1 second

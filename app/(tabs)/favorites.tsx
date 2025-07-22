@@ -141,7 +141,7 @@ export default function FavoritesScreen() {
 
       console.log('🔄 Fetching wishlist for user ID:', state.user.id);
       
-      const response = await fetch(`https://autotregi.com/api/user/dashboard?user_id=${state.user.id}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/user/dashboard?user_id=${state.user.id}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -175,7 +175,7 @@ export default function FavoritesScreen() {
       const carDetailsPromises = wishlistCarIds.map(async (carId) => {
         try {
           console.log(`📡 Fetching details for car ID: ${carId}`);
-          const carResponse = await fetch(`https://autotregi.com/api/listing/${carId}`, {
+          const carResponse = await fetch(`http://127.0.0.1:8000/api/listing/${carId}`, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
