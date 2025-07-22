@@ -97,16 +97,13 @@ export const useWishlist = () => {
         throw new Error('Not authenticated');
       }
 
-      const response = await fetch('http://127.0.0.1:8000/api/user/add-to-wishlist', {
-        method: 'POST',
+      const response = await fetch(`http://127.0.0.1:8000/api/user/add-to-wishlist/${carId}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          car_id: parseInt(carId),
-        }),
       });
 
       if (!response.ok) {
@@ -133,16 +130,13 @@ export const useWishlist = () => {
         throw new Error('Not authenticated');
       }
 
-      const response = await fetch('http://127.0.0.1:8000/api/user/remove-from-wishlist', {
-        method: 'POST',
+      const response = await fetch(`http://127.0.0.1:8000/api/user/remove-wishlist/${carId}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          car_id: parseInt(carId),
-        }),
       });
 
       if (!response.ok) {
