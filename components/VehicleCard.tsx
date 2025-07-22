@@ -13,17 +13,28 @@ interface VehicleCardProps {
 
 export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) => {
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites } = useAppContext();
+  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
   const { theme } = useTheme();
   const [imageError, setImageError] = useState(false);
+  const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
 
-  const isFavorited = vehicle.isFavorited || state.favorites.includes(vehicle.id);
+  const isFavorited = isWishlisted(vehicle.id);
 
-  const handleFavoritePress = () => {
-    if (isFavorited) {
-      removeFromFavorites(vehicle.id);
-    } else {
-      addToFavorites(vehicle.id);
+  const handleFavoritePress = async () => {
+    if (isUpdatingWishlist) return;
+    
+    setIsUpdatingWishlist(true);
+    try {
+      if (isFavorited) {
+        await removeFromFavorites(vehicle.id);
+      } else {
+        await addToFavorites(vehicle.id);
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      // Could show a toast or alert here
+    } finally {
+      setIsUpdatingWishlist(false);
     }
   };
 
@@ -65,10 +76,14 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) =>
             <Text style={styles.promotedText}>PREMIUM</Text>
           </View>
         )}
-        <TouchableOpacity style={styles.favoriteButton} onPress={handleFavoritePress}>
+        <TouchableOpacity 
+          style={[styles.favoriteButton, isUpdatingWishlist && styles.favoriteButtonDisabled]} 
+          onPress={handleFavoritePress}
+          disabled={isUpdatingWishlist}
+        >
           <Heart
             size={20}
-            color={isFavorited ? '#EF4444' : theme.colors.textTertiary}
+            color={isFavorited ? '#EF4444' : (isUpdatingWishlist ? '#9CA3AF' : theme.colors.textTertiary)}
             fill={isFavorited ? '#EF4444' : 'transparent'}
           />
         </TouchableOpacity>
@@ -168,6 +183,9 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowOpacity: theme.isDark ? 0.3 : 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  favoriteButtonDisabled: {
+    opacity: 0.6,
   },
   content: {
     padding: 16,

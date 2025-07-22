@@ -68,7 +68,7 @@ const mockReviews: Review[] = [
 export default function SellerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites } = useAppContext();
+  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
   const { vehicles: apiVehicles, loading } = useApiVehicles();
   
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
@@ -126,11 +126,15 @@ export default function SellerDetailScreen() {
   };
 
   const handleFavoritePress = (vehicleId: string) => {
-    const isFavorited = state.favorites.includes(vehicleId);
-    if (isFavorited) {
-      removeFromFavorites(vehicleId);
-    } else {
-      addToFavorites(vehicleId);
+    const isFavorited = isWishlisted(vehicleId);
+    try {
+      if (isFavorited) {
+        removeFromFavorites(vehicleId);
+      } else {
+        addToFavorites(vehicleId);
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
     }
   };
 
@@ -170,7 +174,7 @@ export default function SellerDetailScreen() {
   };
 
   const renderVehicleItem = ({ item }: { item: Vehicle }) => {
-    const isFavorited = state.favorites.includes(item.id);
+    const isFavorited = isWishlisted(item.id);
     
     return (
       <TouchableOpacity 
