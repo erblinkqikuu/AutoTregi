@@ -137,7 +137,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'ADD_TO_SEARCH_HISTORY', payload: query });
   };
 
-  const addToFavorites = (vehicleId: string) => {
+  const addToFavorites = async (vehicleId: string) => {
     try {
       await addToWishlist(vehicleId);
     } catch (error) {
@@ -145,7 +145,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const removeFromFavorites = (vehicleId: string) => {
+  const removeFromFavorites = async (vehicleId: string) => {
     try {
       await removeFromWishlist(vehicleId);
     } catch (error) {
