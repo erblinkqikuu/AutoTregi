@@ -102,7 +102,7 @@ interface LoanData {
 export default function VehicleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+  const { addToFavorites, removeFromFavorites, isWishlisted, wishlistLoading } = useAppContext();
   
   const [carDetail, setCarDetail] = useState<CarDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +129,6 @@ export default function VehicleDetailScreen() {
   const [relatedCars, setRelatedCars] = useState<CarDetail[]>([]);
   const [dealerInfo, setDealerInfo] = useState<Dealer | null>(null);
   const [loadingDealer, setLoadingDealer] = useState(false);
-  const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
 
   // Gallery images state
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
@@ -302,21 +301,17 @@ export default function VehicleDetailScreen() {
 
   const isFavorited = isWishlisted(carDetail.id);
 
-  const handleFavoritePress = async () => {
-    if (isUpdatingWishlist) return;
+  const handleFavoritePress = () => {
+    if (wishlistLoading) return;
     
-    setIsUpdatingWishlist(true);
     try {
       if (isFavorited) {
-        await removeFromFavorites(carDetail.id);
+        removeFromFavorites(carDetail.id);
       } else {
-        await addToFavorites(carDetail.id);
+        addToFavorites(carDetail.id);
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);
-      // Could show an alert here
-    } finally {
-      setIsUpdatingWishlist(false);
     }
   };
 
@@ -898,13 +893,13 @@ export default function VehicleDetailScreen() {
             <Share2 size={20} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.headerButton, isUpdatingWishlist && { opacity: 0.6 }]} 
+            style={[styles.headerButton, wishlistLoading && { opacity: 0.6 }]} 
             onPress={handleFavoritePress}
-            disabled={isUpdatingWishlist}
+            disabled={wishlistLoading}
           >
             <Heart
               size={20}
-              color={isFavorited ? '#EF4444' : (isUpdatingWishlist ? '#9CA3AF' : '#FFFFFF')}
+              color={isFavorited ? '#EF4444' : (wishlistLoading ? '#9CA3AF' : '#FFFFFF')}
               fill={isFavorited ? '#EF4444' : 'transparent'}
             />
           </TouchableOpacity>

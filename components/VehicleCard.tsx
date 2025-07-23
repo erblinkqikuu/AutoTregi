@@ -13,28 +13,23 @@ interface VehicleCardProps {
 
 export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) => {
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+  const { addToFavorites, removeFromFavorites, isWishlisted, wishlistLoading } = useAppContext();
   const { theme } = useTheme();
   const [imageError, setImageError] = useState(false);
-  const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
 
   const isFavorited = isWishlisted(vehicle.id);
 
-  const handleFavoritePress = async () => {
-    if (isUpdatingWishlist) return;
+  const handleFavoritePress = () => {
+    if (wishlistLoading) return;
     
-    setIsUpdatingWishlist(true);
     try {
       if (isFavorited) {
-        await removeFromFavorites(vehicle.id);
+        removeFromFavorites(vehicle.id);
       } else {
-        await addToFavorites(vehicle.id);
+        addToFavorites(vehicle.id);
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);
-      // Could show a toast or alert here
-    } finally {
-      setIsUpdatingWishlist(false);
     }
   };
 
@@ -77,13 +72,13 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) =>
           </View>
         )}
         <TouchableOpacity 
-          style={[styles.favoriteButton, isUpdatingWishlist && styles.favoriteButtonDisabled]} 
+          style={[styles.favoriteButton, wishlistLoading && styles.favoriteButtonDisabled]} 
           onPress={handleFavoritePress}
-          disabled={isUpdatingWishlist}
+          disabled={wishlistLoading}
         >
           <Heart
             size={20}
-            color={isFavorited ? '#EF4444' : (isUpdatingWishlist ? '#9CA3AF' : theme.colors.textTertiary)}
+            color={isFavorited ? '#EF4444' : (wishlistLoading ? '#9CA3AF' : theme.colors.textTertiary)}
             fill={isFavorited ? '#EF4444' : 'transparent'}
           />
         </TouchableOpacity>
