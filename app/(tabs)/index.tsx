@@ -142,7 +142,10 @@ export default function HomeScreen() {
 
   const renderVehicle = ({ item }: { item: typeof paginatedVehicles[0] }) => (
     <VehicleCard
-      vehicle={item}
+      vehicle={{
+        ...item,
+        isFavorited: isWishlisted(item.id)
+      }}
       onPress={() => handleVehiclePress(item.id)}
     />
   );

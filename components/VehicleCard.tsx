@@ -26,9 +26,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) =>
     
     try {
       if (isFavorited) {
-        removeFromFavorites(vehicle.id);
+        removeFromWishlist(vehicle.id);
       } else {
-        addToFavorites(vehicle.id);
+        addToWishlist(vehicle.id);
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);

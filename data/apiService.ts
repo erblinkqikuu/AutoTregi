@@ -338,7 +338,7 @@ class ApiService {
       createdAt: new Date(apiVehicle.created_at || Date.now()),
       updatedAt: new Date(apiVehicle.created_at || Date.now()),
       views: apiVehicle.views || 0,
-      isFavorited: false, // This will be overridden by the wishlist hook
+      isFavorited: false, // This will be set by components using wishlist hook
     };
 
     // Add address field to the transformed vehicle
