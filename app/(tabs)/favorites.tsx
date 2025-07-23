@@ -14,6 +14,7 @@ import { VehicleCard } from '@/components/VehicleCard';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { useAppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useWishlist } from '@/hooks/useWishlist';
 import { router } from 'expo-router';
 
 interface WishlistItem {
@@ -115,6 +116,7 @@ export default function FavoritesScreen() {
   const { t } = useTranslation();
   const { state } = useAppContext();
   const { theme } = useTheme();
+  const { refreshWishlist } = useWishlist();
   
   const [wishlistCars, setWishlistCars] = useState<TransformedVehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,21 +131,25 @@ export default function FavoritesScreen() {
   }, [state.isAuthenticated, state.user?.id]);
 
   const fetchWishlistCars = async () => {
-    if (!state.user?.id) {
-      setError('User ID not available');
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
 
-      console.log('🔄 Fetching wishlist for user ID:', state.user.id);
+      // Get auth token from localStorage
+      const accessToken = Platform.OS === 'web' ? localStorage.getItem('access_token') : null;
       
-      const response = await fetch(`http://127.0.0.1:8000/api/user/dashboard?user_id=${state.user.id}`, {
+      if (!accessToken) {
+        setError('Not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      console.log('🔄 Fetching wishlist cars...');
+      
+      const response = await fetch('http://127.0.0.1:8000/api/user/wishlists', {
         method: 'GET',
         headers: {
+          'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
@@ -153,62 +159,23 @@ export default function FavoritesScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: DashboardApiResponse = await response.json();
+      const data = await response.json();
       
-      console.log('📊 Dashboard API Response:', data);
-      console.log('📋 Wishlists:', data.wishlists);
-      console.log('🚗 Total Cars:', data.cars.length);
-      console.log('❤️ Total Wishlist Count:', data.total_wishlist_count);
+      console.log('📊 Wishlist API Response:', data);
+      console.log('🚗 Wishlist Cars:', data.cars);
 
-      // Extract car_ids from wishlists
-      const wishlistCarIds = data.wishlists.map(wishlist => wishlist.car_id);
-      console.log('🎯 Wishlist Car IDs:', wishlistCarIds);
-
-      // Fetch detailed information for each wishlist car
-      if (wishlistCarIds.length === 0) {
+      if (!data.cars || data.cars.length === 0) {
         setWishlistCars([]);
-        console.log('📭 No cars in wishlist');
+        console.log('📭 No cars in wishlist'); 
         return;
       }
 
-      console.log('🔄 Fetching detailed car information...');
-      const carDetailsPromises = wishlistCarIds.map(async (carId) => {
-        try {
-          console.log(`📡 Fetching details for car ID: ${carId}`);
-          const carResponse = await fetch(`http://127.0.0.1:8000/api/listing/${carId}`, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!carResponse.ok) {
-            console.warn(`⚠️ Failed to fetch car ${carId}: ${carResponse.status}`);
-            return null;
-          }
-
-          const carData = await carResponse.json();
-          console.log(`✅ Car ${carId} details:`, carData);
-          
-          // The API returns the car data directly or in a 'car' property
-          const carInfo = carData.car || carData;
-          return transformApiCarToVehicle(carInfo);
-        } catch (error) {
-          console.error(`❌ Error fetching car ${carId}:`, error);
-          return null;
-        }
-      });
-
-      // Wait for all car details to be fetched
-      const carDetails = await Promise.all(carDetailsPromises);
+      // Transform wishlist cars directly
+      const transformedCars = data.cars.map(transformWishlistCarToVehicle);
       
-      // Filter out any failed requests (null values)
-      const validCarDetails = carDetails.filter(car => car !== null) as TransformedVehicle[];
-      
-      setWishlistCars(validCarDetails);
-      console.log('🎯 Final wishlist cars:', validCarDetails);
-      console.log(`✅ Successfully loaded ${validCarDetails.length} out of ${wishlistCarIds.length} wishlist cars`);
+      setWishlistCars(transformedCars);
+      console.log('🎯 Final wishlist cars:', transformedCars);
+      console.log(`✅ Successfully loaded ${transformedCars.length} wishlist cars`);
 
     } catch (err) {
       console.error('❌ Error fetching wishlist:', err);
@@ -218,7 +185,7 @@ export default function FavoritesScreen() {
     }
   };
 
-  const transformApiCarToVehicle = (apiCar: ApiCar): TransformedVehicle => {
+  const transformWishlistCarToVehicle = (wishlistCar: any): TransformedVehicle => {
     // Transform image path
     const getImageUrl = (imagePath: string) => {
       if (!imagePath) return 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800';
@@ -227,13 +194,13 @@ export default function FavoritesScreen() {
     };
 
     // Parse price
-    const price = parseFloat(apiCar.offer_price?.replace(/[,\s]/g, '') || '0');
+    const price = parseFloat(wishlistCar.offer_price?.replace(/[,\s]/g, '') || '0');
 
     // Parse mileage
-    const mileage = parseFloat(apiCar.mileage?.replace(/[,\s]/g, '') || '0');
+    const mileage = 50000; // Default since wishlist API doesn't include mileage
 
     // Parse year
-    const year = parseInt(apiCar.year || '2020');
+    const year = 2020; // Default since wishlist API doesn't include year
 
     // Determine category based on brand or title
     const getCategory = (title: string, brand: string): 'car' | 'motorcycle' | 'truck' | 'large-vehicle' => {
@@ -254,23 +221,10 @@ export default function FavoritesScreen() {
     };
 
     // Normalize transmission
-    const normalizeTransmission = (transmission: string): 'manual' | 'automatic' | 'cvt' => {
-      const lower = transmission?.toLowerCase() || '';
-      if (lower.includes('automatic') || lower.includes('auto')) return 'automatic';
-      if (lower.includes('cvt')) return 'cvt';
-      return 'manual';
-    };
+    const transmission = 'automatic'; // Default since wishlist API doesn't include transmission
 
     // Normalize fuel type
-    const normalizeFuelType = (fuelType?: string): 'gasoline' | 'diesel' | 'electric' | 'hybrid' | 'lpg' | 'cng' => {
-      const lower = fuelType?.toLowerCase() || '';
-      if (lower.includes('diesel')) return 'diesel';
-      if (lower.includes('electric')) return 'electric';
-      if (lower.includes('hybrid')) return 'hybrid';
-      if (lower.includes('lpg')) return 'lpg';
-      if (lower.includes('cng')) return 'cng';
-      return 'gasoline';
-    };
+    const fuelType = 'gasoline'; // Default since wishlist API doesn't include fuel type
 
     // Normalize condition
     const normalizeCondition = (condition: string): 'new' | 'used' | 'damaged' => {
@@ -281,41 +235,36 @@ export default function FavoritesScreen() {
     };
 
     return {
-      id: apiCar.id.toString(),
-      sellerId: apiCar.seller?.id || '1',
+      id: wishlistCar.id.toString(),
+      sellerId: '1', // Default seller ID
       seller: {
-        id: apiCar.seller?.id || '1',
-        name: apiCar.seller?.name || 'Seller',
-        avatar: apiCar.seller?.avatar ? getImageUrl(apiCar.seller.avatar) : undefined,
-        rating: apiCar.seller?.rating || 4.5,
-        reviewCount: apiCar.seller?.review_count || 0,
-        isVerified: apiCar.seller?.is_verified || false,
-        location: apiCar.seller?.location || apiCar.address || apiCar.location || 'Tiranë, Shqipëri',
-        memberSince: apiCar.seller?.member_since || 'Jan 2023',
-        responseTime: apiCar.seller?.response_time,
-        phone: apiCar.seller?.phone,
+        id: '1',
+        name: 'Seller',
+        rating: 4.5,
+        reviewCount: 0,
+        isVerified: false,
+        location: wishlistCar.address || 'Tiranë, Shqipëri',
+        memberSince: 'Jan 2023',
       },
-      title: apiCar.title || 'Vehicle',
-      description: apiCar.description || 'No description available',
-      category: getCategory(apiCar.title || '', apiCar.brand?.name || ''),
-      make: apiCar.brand?.name || 'Unknown',
-      model: apiCar.title?.replace(apiCar.brand?.name || '', '').trim() || 'Unknown',
+      title: wishlistCar.title || 'Vehicle',
+      description: wishlistCar.description?.replace(/&lt;/g, '<').replace(/&gt;/g, '>') || 'No description available',
+      category: getCategory(wishlistCar.title || '', wishlistCar.brand?.name || ''),
+      make: wishlistCar.brand?.name || 'Unknown',
+      model: wishlistCar.title?.replace(wishlistCar.brand?.name || '', '').trim() || 'Unknown',
       year,
       price,
       currency: '€',
-      condition: normalizeCondition(apiCar.condition),
+      condition: normalizeCondition(wishlistCar.condition),
       mileage,
-      fuelType: normalizeFuelType(apiCar.fuel_type),
-      transmission: normalizeTransmission(apiCar.transmission),
-      location: apiCar.address || apiCar.location || 'Tiranë, Shqipëri',
-      countryId: apiCar.country_id,
-      cityId: apiCar.city_id,
-      images: [getImageUrl(apiCar.thumb_image)],
-      features: Array.isArray(apiCar.features) ? apiCar.features : [],
-      isPromoted: apiCar.is_promoted || false,
-      createdAt: new Date(apiCar.created_at || Date.now()),
-      updatedAt: new Date(apiCar.created_at || Date.now()),
-      views: apiCar.views || 0,
+      fuelType,
+      transmission,
+      location: wishlistCar.address || 'Tiranë, Shqipëri',
+      images: [getImageUrl(wishlistCar.thumb_image)],
+      features: [],
+      isPromoted: wishlistCar.is_featured === 'enable',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      views: 0,
       isFavorited: true, // Always true since these are wishlist items
     };
   };
@@ -421,7 +370,10 @@ export default function FavoritesScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         refreshing={loading}
-        onRefresh={fetchWishlistCars}
+        onRefresh={() => {
+          refreshWishlist();
+          fetchWishlistCars();
+        }}
         ListFooterComponent={() => (
           wishlistCars.length > 0 ? (
             <View style={styles.footerSpacing} />

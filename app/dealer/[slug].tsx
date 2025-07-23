@@ -110,7 +110,7 @@ interface DealerApiResponse {
 export default function DealerDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites } = useAppContext();
+  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
   const { theme } = useTheme();
   
   const [dealerData, setDealerData] = useState<DealerApiResponse | null>(null);
@@ -212,11 +212,15 @@ export default function DealerDetailScreen() {
   };
 
   const handleFavoritePress = (carId: number) => {
-    const isFavorited = state.favorites.includes(carId.toString());
-    if (isFavorited) {
-      removeFromFavorites(carId.toString());
-    } else {
-      addToFavorites(carId.toString());
+    const isFavorited = isWishlisted(carId.toString());
+    try {
+      if (isFavorited) {
+        removeFromFavorites(carId.toString());
+      } else {
+        addToFavorites(carId.toString());
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
     }
   };
 
@@ -341,7 +345,7 @@ export default function DealerDetailScreen() {
       createdAt: new Date(),
       updatedAt: new Date(),
       views: dealerCar.views || 0,
-      isFavorited: state.favorites.includes(dealerCar.id.toString()),
+      isFavorited: isWishlisted(dealerCar.id.toString()),
     };
   };
 

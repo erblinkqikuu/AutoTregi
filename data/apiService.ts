@@ -85,6 +85,9 @@ export interface TransformedVehicle {
   isFavorited: boolean;
 }
 
+// Add import for wishlist hook
+import { useWishlist } from '@/hooks/useWishlist';
+
 class ApiService {
   private baseUrl = 'http://127.0.0.1:8000';
   private apiUrl = `${this.baseUrl}/api/listings`;
@@ -237,6 +240,7 @@ class ApiService {
     }
   }
   private transformVehicle = (apiVehicle: ApiVehicle): TransformedVehicle => {
+    // Note: isFavorited will be determined by the useWishlist hook in components
     // Transform image path
     const getImageUrl = (imagePath: string) => {
       if (!imagePath) return 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800';
@@ -334,7 +338,7 @@ class ApiService {
       createdAt: new Date(apiVehicle.created_at || Date.now()),
       updatedAt: new Date(apiVehicle.created_at || Date.now()),
       views: apiVehicle.views || 0,
-      isFavorited: false,
+      isFavorited: false, // This will be overridden by the wishlist hook
     };
 
     // Add address field to the transformed vehicle

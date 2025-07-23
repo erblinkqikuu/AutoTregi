@@ -102,7 +102,7 @@ interface LoanData {
 export default function VehicleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites } = useAppContext();
+  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
   
   const [carDetail, setCarDetail] = useState<CarDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,6 +129,7 @@ export default function VehicleDetailScreen() {
   const [relatedCars, setRelatedCars] = useState<CarDetail[]>([]);
   const [dealerInfo, setDealerInfo] = useState<Dealer | null>(null);
   const [loadingDealer, setLoadingDealer] = useState(false);
+  const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
 
   // Gallery images state
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
@@ -299,13 +300,23 @@ export default function VehicleDetailScreen() {
     );
   }
 
-  const isFavorited = state.favorites.includes(carDetail.id);
+  const isFavorited = isWishlisted(carDetail.id);
 
-  const handleFavoritePress = () => {
-    if (isFavorited) {
-      removeFromFavorites(carDetail.id);
-    } else {
-      addToFavorites(carDetail.id);
+  const handleFavoritePress = async () => {
+    if (isUpdatingWishlist) return;
+    
+    setIsUpdatingWishlist(true);
+    try {
+      if (isFavorited) {
+        await removeFromFavorites(carDetail.id);
+      } else {
+        await addToFavorites(carDetail.id);
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      // Could show an alert here
+    } finally {
+      setIsUpdatingWishlist(false);
     }
   };
 
@@ -886,10 +897,14 @@ export default function VehicleDetailScreen() {
           <TouchableOpacity style={styles.headerButton} onPress={handleShare}>
             <Share2 size={20} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton} onPress={handleFavoritePress}>
+          <TouchableOpacity 
+            style={[styles.headerButton, isUpdatingWishlist && { opacity: 0.6 }]} 
+            onPress={handleFavoritePress}
+            disabled={isUpdatingWishlist}
+          >
             <Heart
               size={20}
-              color={isFavorited ? '#EF4444' : '#FFFFFF'}
+              color={isFavorited ? '#EF4444' : (isUpdatingWishlist ? '#9CA3AF' : '#FFFFFF')}
               fill={isFavorited ? '#EF4444' : 'transparent'}
             />
           </TouchableOpacity>
@@ -1501,4 +1516,4 @@ const styles = StyleSheet.create({
     width: width,
     height: height - 100,
   },
-});
+}); 
