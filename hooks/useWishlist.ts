@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
+<<<<<<< HEAD
+=======
+import { Platform } from 'react-native';
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
 
 interface WishlistCar {
   id: number;
@@ -112,10 +116,16 @@ export const useWishlist = () => {
 
       // Optimistically update local state
       setWishlistedCarIds(prev => new Set([...prev, carId]));
+<<<<<<< HEAD
       console.log('✅ Added to wishlist:', carId);
       
       // Refresh wishlist to ensure consistency
       await fetchWishlist();
+=======
+      console.log('🎯 Optimistically added to wishlist:', carId);
+      console.log('✅ Added to wishlist:', carId);
+      
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
     } catch (err) {
       console.error('Error adding to wishlist:', err);
       throw err;
@@ -147,12 +157,19 @@ export const useWishlist = () => {
       setWishlistedCarIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(carId);
+<<<<<<< HEAD
+=======
+        console.log('🎯 Optimistically removed from wishlist:', carId);
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
         return newSet;
       });
       console.log('✅ Removed from wishlist:', carId);
       
+<<<<<<< HEAD
       // Refresh wishlist to ensure consistency
       await fetchWishlist();
+=======
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
     } catch (err) {
       console.error('Error removing from wishlist:', err);
       throw err;
@@ -160,7 +177,14 @@ export const useWishlist = () => {
   };
 
   const isWishlisted = (carId: string): boolean => {
+<<<<<<< HEAD
     return wishlistedCarIds.has(carId);
+=======
+    console.log(`🔍 Checking if car ${carId} is wishlisted. Current wishlist:`, Array.from(wishlistedCarIds));
+    const result = wishlistedCarIds.has(carId);
+    console.log(`❤️ Car ${carId} wishlisted: ${result}`);
+    return result;
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   };
 
   const toggleWishlist = async (carId: string) => {

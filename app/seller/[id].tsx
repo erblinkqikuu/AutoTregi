@@ -29,6 +29,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { useAppContext } from '@/contexts/AppContext';
 import { useApiVehicles } from '@/hooks/useApiVehicles';
+import { useWishlist } from '@/hooks/useWishlist';
 import { Vehicle, Review } from '@/types';
 
 // Mock reviews data
@@ -68,7 +69,12 @@ const mockReviews: Review[] = [
 export default function SellerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
+<<<<<<< HEAD
   const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+=======
+  const { state, addToFavorites, removeFromFavorites } = useAppContext();
+  const { isWishlisted } = useWishlist();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   const { vehicles: apiVehicles, loading } = useApiVehicles();
   
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
@@ -129,9 +135,15 @@ export default function SellerDetailScreen() {
     const isFavorited = isWishlisted(vehicleId);
     try {
       if (isFavorited) {
+<<<<<<< HEAD
         removeFromFavorites(vehicleId);
       } else {
         addToFavorites(vehicleId);
+=======
+        removeFromWishlist(vehicleId);
+      } else {
+        addToWishlist(vehicleId);
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);

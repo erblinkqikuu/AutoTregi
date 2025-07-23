@@ -35,6 +35,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { useAppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useWishlist } from '@/hooks/useWishlist';
 import { VehicleCard } from '@/components/VehicleCard';
 
 interface DealerDetails {
@@ -110,8 +111,13 @@ interface DealerApiResponse {
 export default function DealerDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { t } = useTranslation();
+<<<<<<< HEAD
   const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+=======
+  const { state } = useAppContext();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   const { theme } = useTheme();
+  const { isWishlisted } = useWishlist();
   
   const [dealerData, setDealerData] = useState<DealerApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -212,6 +218,7 @@ export default function DealerDetailScreen() {
   };
 
   const handleFavoritePress = (carId: number) => {
+<<<<<<< HEAD
     const isFavorited = isWishlisted(carId.toString());
     try {
       if (isFavorited) {
@@ -222,6 +229,10 @@ export default function DealerDetailScreen() {
     } catch (error) {
       console.error('Error updating wishlist:', error);
     }
+=======
+    // This will be handled by the VehicleCard component itself
+    // since it has its own wishlist integration
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   };
 
   const loadMoreCars = () => {

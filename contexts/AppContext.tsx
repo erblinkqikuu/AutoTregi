@@ -1,37 +1,48 @@
+<<<<<<< HEAD
 import React, { createContext, useContext, useReducer, useEffect, useRef, ReactNode } from 'react';
 import { AppState, Language, User } from '@/types';
 import { useWishlist } from '@/hooks/useWishlist';
+=======
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { Platform } from 'react-native';
+import { useWishlist } from '@/hooks/useWishlist';
+import { User, Language, AppState } from '@/types';
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
 
 interface AppContextType {
   state: AppState;
   login: (user: User) => void;
   logout: () => void;
   setLanguage: (language: Language) => void;
+<<<<<<< HEAD
   addToFavorites: (vehicleId: string) => Promise<void>;
   removeFromFavorites: (vehicleId: string) => Promise<void>;
   isWishlisted: (vehicleId: string) => boolean;
   addToSearchHistory: (query: string) => void;
   initializeAuth: () => Promise<void>;
+=======
+  addToSearchHistory: (query: string) => void;
+  addToFavorites: (vehicleId: string) => void;
+  removeFromFavorites: (vehicleId: string) => void;
+  refreshWishlist: () => void;
+  wishlistLoading: boolean;
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
 }
-
-const AppContext = createContext<AppContextType | undefined>(undefined);
 
 type AppAction =
   | { type: 'LOGIN'; payload: User }
   | { type: 'LOGOUT' }
   | { type: 'SET_LANGUAGE'; payload: Language }
-  | { type: 'ADD_TO_FAVORITES'; payload: string }
-  | { type: 'REMOVE_FROM_FAVORITES'; payload: string }
   | { type: 'ADD_TO_SEARCH_HISTORY'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean };
 
 const initialState: AppState = {
   user: null,
   isAuthenticated: false,
-  language: 'sq',
+  language: 'en',
   favorites: [],
   searchHistory: [],
-  isLoading: false,
+  isLoading: true,
 };
 
 const appReducer = (state: AppState, action: AppAction): AppState => {
@@ -48,6 +59,8 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         ...state,
         user: null,
         isAuthenticated: false,
+        favorites: [],
+        searchHistory: [],
         isLoading: false,
       };
     case 'SET_LANGUAGE':
@@ -55,20 +68,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         ...state,
         language: action.payload,
       };
-    case 'ADD_TO_FAVORITES':
-      return {
-        ...state,
-        favorites: [...state.favorites, action.payload],
-      };
-    case 'REMOVE_FROM_FAVORITES':
-      return {
-        ...state,
-        favorites: state.favorites.filter(id => id !== action.payload),
-      };
     case 'ADD_TO_SEARCH_HISTORY':
+      const newHistory = [action.payload, ...state.searchHistory.filter(item => item !== action.payload)].slice(0, 10);
       return {
         ...state,
-        searchHistory: [action.payload, ...state.searchHistory.filter(q => q !== action.payload)].slice(0, 10),
+        searchHistory: newHistory,
       };
     case 'SET_LOADING':
       return {
@@ -80,8 +84,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
   }
 };
 
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+<<<<<<< HEAD
   const isMountedRef = useRef(false);
   const {
     isWishlisted,
@@ -118,30 +125,64 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     safeDispatch({ type: 'SET_LOADING', payload: false });
   };
+=======
+  const { 
+    addToWishlist, 
+    removeFromWishlist, 
+    refreshWishlist: refreshWishlistHook,
+    loading: wishlistLoading 
+  } = useWishlist();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
 
+  // Check for existing auth on app start
   useEffect(() => {
-    isMountedRef.current = true;
-    initializeAuth();
-
-    return () => {
-      isMountedRef.current = false;
+    const checkExistingAuth = () => {
+      if (Platform.OS === 'web') {
+        const accessToken = localStorage.getItem('access_token');
+        const userData = localStorage.getItem('userData');
+        
+        if (accessToken && userData) {
+          try {
+            const user = JSON.parse(userData);
+            dispatch({ type: 'LOGIN', payload: user });
+          } catch (error) {
+            console.error('Error parsing stored user data:', error);
+            dispatch({ type: 'SET_LOADING', payload: false });
+          }
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
+      } else {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
     };
+
+    checkExistingAuth();
   }, []);
 
   const login = (user: User) => {
-    safeDispatch({ type: 'LOGIN', payload: user });
+    dispatch({ type: 'LOGIN', payload: user });
   };
 
+<<<<<<< HEAD
   const logout = async () => {
     safeDispatch({ type: 'LOGOUT' });
     // Clear localStorage on logout
     if (typeof window !== 'undefined' && window.localStorage) {
+=======
+  const logout = () => {
+    dispatch({ type: 'LOGOUT' });
+    
+    // Clear localStorage on web
+    if (Platform.OS === 'web') {
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
       localStorage.removeItem('access_token');
       localStorage.removeItem('token_type');
       localStorage.removeItem('expires_in');
       localStorage.removeItem('token_created_at');
       localStorage.removeItem('userData');
     }
+<<<<<<< HEAD
     // Refresh wishlist to clear it
     await refreshWishlist();
   };
@@ -168,13 +209,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.error('Failed to remove from favorites:', error);
       throw error;
     }
+=======
+  };
+
+  const setLanguage = (language: Language) => {
+    dispatch({ type: 'SET_LANGUAGE', payload: language });
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   };
 
   const addToSearchHistory = (query: string) => {
-    safeDispatch({ type: 'ADD_TO_SEARCH_HISTORY', payload: query });
+    dispatch({ type: 'ADD_TO_SEARCH_HISTORY', payload: query });
   };
 
+
   return (
+<<<<<<< HEAD
     <AppContext.Provider
       value={{
         state,
@@ -188,6 +237,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         initializeAuth,
       }}
     >
+=======
+    <AppContext.Provider value={{
+      state,
+      login,
+      logout,
+      setLanguage,
+      addToSearchHistory,
+    }}>
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
       {children}
     </AppContext.Provider>
   );

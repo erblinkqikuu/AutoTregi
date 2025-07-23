@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Heart, MapPin, Calendar, Gauge } from 'lucide-react-native';
 import { Vehicle } from '@/types';
 import { useTranslation } from '@/contexts/TranslationContext';
-import { useAppContext } from '@/contexts/AppContext';
+import { useWishlist } from '@/hooks/useWishlist';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface VehicleCardProps {
@@ -13,13 +13,18 @@ interface VehicleCardProps {
 
 export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) => {
   const { t } = useTranslation();
+<<<<<<< HEAD
   const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+=======
+  const { isWishlisted, addToWishlist, removeFromWishlist, loading: wishlistLoading } = useWishlist();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   const { theme } = useTheme();
   const [imageError, setImageError] = useState(false);
   const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
 
   const isFavorited = isWishlisted(vehicle.id);
 
+<<<<<<< HEAD
   const handleFavoritePress = async () => {
     if (isUpdatingWishlist) return;
     
@@ -35,6 +40,19 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) =>
       // Could show a toast or alert here
     } finally {
       setIsUpdatingWishlist(false);
+=======
+  const handleFavoritePress = () => {
+    if (wishlistLoading) return;
+    
+    try {
+      if (isFavorited) {
+        removeFromWishlist(vehicle.id);
+      } else {
+        addToWishlist(vehicle.id);
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
     }
   };
 
@@ -77,6 +95,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) =>
           </View>
         )}
         <TouchableOpacity 
+<<<<<<< HEAD
           style={[styles.favoriteButton, isUpdatingWishlist && styles.favoriteButtonDisabled]} 
           onPress={handleFavoritePress}
           disabled={isUpdatingWishlist}
@@ -84,6 +103,15 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) =>
           <Heart
             size={20}
             color={isFavorited ? '#EF4444' : (isUpdatingWishlist ? '#9CA3AF' : theme.colors.textTertiary)}
+=======
+          style={[styles.favoriteButton, wishlistLoading && styles.favoriteButtonDisabled]} 
+          onPress={handleFavoritePress}
+          disabled={wishlistLoading}
+        >
+          <Heart
+            size={20}
+            color={isFavorited ? '#EF4444' : (wishlistLoading ? '#9CA3AF' : theme.colors.textTertiary)}
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
             fill={isFavorited ? '#EF4444' : 'transparent'}
           />
         </TouchableOpacity>

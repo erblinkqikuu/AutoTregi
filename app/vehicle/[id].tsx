@@ -17,7 +17,7 @@ import {
 import { ArrowLeft, Heart, Share2, Phone, MessageCircle, MapPin, Calendar, Gauge, Fuel, Settings, Eye, Shield, Star, ChevronLeft, ChevronRight, X, Play, Mail, Calculator, User, Car, Palette, Users, Clock, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/contexts/TranslationContext';
-import { useAppContext } from '@/contexts/AppContext';
+import { useWishlist } from '@/hooks/useWishlist';
 
 const { width, height } = Dimensions.get('window');
 
@@ -102,7 +102,12 @@ interface LoanData {
 export default function VehicleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
+<<<<<<< HEAD
   const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+=======
+  const { addToFavorites, removeFromFavorites, wishlistLoading } = useAppContext();
+  const { isWishlisted } = useWishlist();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   
   const [carDetail, setCarDetail] = useState<CarDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -302,6 +307,7 @@ export default function VehicleDetailScreen() {
 
   const isFavorited = isWishlisted(carDetail.id);
 
+<<<<<<< HEAD
   const handleFavoritePress = async () => {
     if (isUpdatingWishlist) return;
     
@@ -317,6 +323,19 @@ export default function VehicleDetailScreen() {
       // Could show an alert here
     } finally {
       setIsUpdatingWishlist(false);
+=======
+  const handleFavoritePress = () => {
+    if (wishlistLoading) return;
+    
+    try {
+      if (isFavorited) {
+        removeFromWishlist(carDetail.id);
+      } else {
+        addToWishlist(carDetail.id);
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
     }
   };
 
@@ -898,6 +917,7 @@ export default function VehicleDetailScreen() {
             <Share2 size={20} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity 
+<<<<<<< HEAD
             style={[styles.headerButton, isUpdatingWishlist && { opacity: 0.6 }]} 
             onPress={handleFavoritePress}
             disabled={isUpdatingWishlist}
@@ -905,6 +925,15 @@ export default function VehicleDetailScreen() {
             <Heart
               size={20}
               color={isFavorited ? '#EF4444' : (isUpdatingWishlist ? '#9CA3AF' : '#FFFFFF')}
+=======
+            style={[styles.headerButton, wishlistLoading && { opacity: 0.6 }]} 
+            onPress={handleFavoritePress}
+            disabled={wishlistLoading}
+          >
+            <Heart
+              size={20}
+              color={isFavorited ? '#EF4444' : (wishlistLoading ? '#9CA3AF' : '#FFFFFF')}
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
               fill={isFavorited ? '#EF4444' : 'transparent'}
             />
           </TouchableOpacity>

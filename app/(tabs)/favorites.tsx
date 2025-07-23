@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { Heart } from 'lucide-react-native';
 import { VehicleCard } from '@/components/VehicleCard';
@@ -116,7 +117,16 @@ export default function FavoritesScreen() {
   const { t } = useTranslation();
   const { state } = useAppContext();
   const { theme } = useTheme();
+<<<<<<< HEAD
   const { refreshWishlist } = useWishlist();
+=======
+  const { 
+    wishlistedCarIds, 
+    loading: wishlistLoading, 
+    error: wishlistError,
+    refreshWishlist: refreshWishlistHook 
+  } = useWishlist();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   
   const [wishlistCars, setWishlistCars] = useState<TransformedVehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,6 +140,15 @@ export default function FavoritesScreen() {
     }
   }, [state.isAuthenticated, state.user?.id]);
 
+<<<<<<< HEAD
+=======
+  // Only refresh when wishlist count changes significantly
+  useEffect(() => {
+    if (state.isAuthenticated && wishlistedCarIds.length > 0 && wishlistCars.length === 0) {
+      fetchWishlistCars();
+    }
+  }, [wishlistedCarIds.length, state.isAuthenticated]);
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
   const fetchWishlistCars = async () => {
     try {
       setLoading(true);
@@ -294,7 +313,7 @@ export default function FavoritesScreen() {
     <View style={styles.emptyContainer}>
       <Heart size={64} color={theme.colors.textTertiary} />
       <Text style={styles.emptyTitle}>Failed to load wishlist</Text>
-      <Text style={styles.emptySubtitle}>{error}</Text>
+      <Text style={styles.emptySubtitle}>{error || wishlistError}</Text>
       <TouchableOpacity style={styles.retryButton} onPress={fetchWishlistCars}>
         <Text style={styles.retryButtonText}>Try Again</Text>
       </TouchableOpacity>
@@ -325,7 +344,7 @@ export default function FavoritesScreen() {
     );
   }
 
-  if (loading) {
+  if (loading || wishlistLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -366,12 +385,18 @@ export default function FavoritesScreen() {
         data={wishlistCars}
         renderItem={renderVehicle}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={error ? renderError : renderEmpty}
+        ListEmptyComponent={(error || wishlistError) ? renderError : renderEmpty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+<<<<<<< HEAD
         refreshing={loading}
         onRefresh={() => {
           refreshWishlist();
+=======
+        refreshing={loading || wishlistLoading}
+        onRefresh={() => {
+          refreshWishlistHook();
+>>>>>>> ab07ba9c9a08229c2ea95638cd28ee76a13a2908
           fetchWishlistCars();
         }}
         ListFooterComponent={() => (
