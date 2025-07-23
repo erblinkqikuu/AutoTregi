@@ -10,6 +10,7 @@ import { PaginationControls } from '@/components/PaginationControls';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { useAppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useWishlist } from '@/hooks/useWishlist';
 import { useVehicleSearch } from '@/hooks/useVehicleSearch';
 import { VehicleCategory, SearchFilters } from '@/types';
 import { useApiVehicles } from '@/hooks/useApiVehicles';
@@ -19,6 +20,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { addToSearchHistory } = useAppContext();
   const { theme } = useTheme();
+  const { isWishlisted } = useWishlist();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<VehicleCategory | null>(null);
   const [filters, setFilters] = useState<SearchFilters>({});
