@@ -18,6 +18,7 @@ import { ArrowLeft, Heart, Share2, Phone, MessageCircle, MapPin, Calendar, Gauge
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { useAppContext } from '@/contexts/AppContext';
+import { useWishlist } from '@/hooks/useWishlist';
 
 const { width, height } = Dimensions.get('window');
 
@@ -102,7 +103,8 @@ interface LoanData {
 export default function VehicleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const { addToFavorites, removeFromFavorites, isWishlisted, wishlistLoading } = useAppContext();
+  const { addToFavorites, removeFromFavorites, wishlistLoading } = useAppContext();
+  const { isWishlisted } = useWishlist();
   
   const [carDetail, setCarDetail] = useState<CarDetail | null>(null);
   const [loading, setLoading] = useState(true);

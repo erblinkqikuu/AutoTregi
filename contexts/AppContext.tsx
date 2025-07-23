@@ -11,7 +11,6 @@ interface AppContextType {
   addToSearchHistory: (query: string) => void;
   addToFavorites: (vehicleId: string) => void;
   removeFromFavorites: (vehicleId: string) => void;
-  isWishlisted: (vehicleId: string) => boolean;
   refreshWishlist: () => void;
   wishlistLoading: boolean;
 }
@@ -76,7 +75,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const { 
-    isWishlisted, 
     addToWishlist, 
     removeFromWishlist, 
     refreshWishlist: refreshWishlistHook,
@@ -170,7 +168,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       addToSearchHistory,
       addToFavorites,
       removeFromFavorites,
-      isWishlisted,
       refreshWishlist,
       wishlistLoading,
     }}>

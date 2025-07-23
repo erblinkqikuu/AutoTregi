@@ -113,6 +113,7 @@ export const useWishlist = () => {
 
       // Optimistically update local state
       setWishlistedCarIds(prev => new Set([...prev, carId]));
+      console.log('🎯 Optimistically added to wishlist:', carId);
       console.log('✅ Added to wishlist:', carId);
       
     } catch (err) {
@@ -146,6 +147,7 @@ export const useWishlist = () => {
       setWishlistedCarIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(carId);
+        console.log('🎯 Optimistically removed from wishlist:', carId);
         return newSet;
       });
       console.log('✅ Removed from wishlist:', carId);
@@ -157,7 +159,10 @@ export const useWishlist = () => {
   };
 
   const isWishlisted = (carId: string): boolean => {
-    return wishlistedCarIds.has(carId);
+    console.log(`🔍 Checking if car ${carId} is wishlisted. Current wishlist:`, Array.from(wishlistedCarIds));
+    const result = wishlistedCarIds.has(carId);
+    console.log(`❤️ Car ${carId} wishlisted: ${result}`);
+    return result;
   };
 
   const toggleWishlist = async (carId: string) => {

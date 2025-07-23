@@ -29,6 +29,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { useAppContext } from '@/contexts/AppContext';
 import { useApiVehicles } from '@/hooks/useApiVehicles';
+import { useWishlist } from '@/hooks/useWishlist';
 import { Vehicle, Review } from '@/types';
 
 // Mock reviews data
@@ -68,7 +69,8 @@ const mockReviews: Review[] = [
 export default function SellerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const { state, addToFavorites, removeFromFavorites, isWishlisted } = useAppContext();
+  const { state, addToFavorites, removeFromFavorites } = useAppContext();
+  const { isWishlisted } = useWishlist();
   const { vehicles: apiVehicles, loading } = useApiVehicles();
   
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
