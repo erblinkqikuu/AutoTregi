@@ -3,7 +3,6 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Heart, MapPin, Calendar, Gauge } from 'lucide-react-native';
 import { Vehicle } from '@/types';
 import { useTranslation } from '@/contexts/TranslationContext';
-import { useAppContext } from '@/contexts/AppContext';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -14,8 +13,7 @@ interface VehicleCardProps {
 
 export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onPress }) => {
   const { t } = useTranslation();
-  const { addToFavorites, removeFromFavorites, wishlistLoading } = useAppContext();
-  const { isWishlisted } = useWishlist();
+  const { isWishlisted, addToWishlist, removeFromWishlist, loading: wishlistLoading } = useWishlist();
   const { theme } = useTheme();
   const [imageError, setImageError] = useState(false);
 

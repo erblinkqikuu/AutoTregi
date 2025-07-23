@@ -17,7 +17,6 @@ import {
 import { ArrowLeft, Heart, Share2, Phone, MessageCircle, MapPin, Calendar, Gauge, Fuel, Settings, Eye, Shield, Star, ChevronLeft, ChevronRight, X, Play, Mail, Calculator, User, Car, Palette, Users, Clock, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/contexts/TranslationContext';
-import { useAppContext } from '@/contexts/AppContext';
 import { useWishlist } from '@/hooks/useWishlist';
 
 const { width, height } = Dimensions.get('window');
