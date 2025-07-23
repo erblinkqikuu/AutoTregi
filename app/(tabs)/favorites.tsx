@@ -115,7 +115,7 @@ interface TransformedVehicle {
 
 export default function FavoritesScreen() {
   const { t } = useTranslation();
-  const { state, refreshWishlist } = useAppContext();
+  const { state } = useAppContext();
   const { theme } = useTheme();
   const { 
     wishlistedCarIds, 

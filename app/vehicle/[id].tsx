@@ -307,9 +307,9 @@ export default function VehicleDetailScreen() {
     
     try {
       if (isFavorited) {
-        removeFromFavorites(carDetail.id);
+        removeFromWishlist(carDetail.id);
       } else {
-        addToFavorites(carDetail.id);
+        addToWishlist(carDetail.id);
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);

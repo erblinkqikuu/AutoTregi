@@ -122,9 +122,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       localStorage.removeItem('token_created_at');
       localStorage.removeItem('userData');
     }
-    
-    // Refresh wishlist after logout to clear it
-    refreshWishlistHook();
   };
 
   const setLanguage = (language: Language) => {
@@ -135,29 +132,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'ADD_TO_SEARCH_HISTORY', payload: query });
   };
 
-  const addToFavorites = async (vehicleId: string) => {
-    try {
-      await addToWishlist(vehicleId);
-    } catch (error) {
-      console.error('Error adding to favorites:', error);
-    }
-  };
-
-  const removeFromFavorites = async (vehicleId: string) => {
-    try {
-      await removeFromWishlist(vehicleId);
-    } catch (error) {
-      console.error('Error removing from favorites:', error);
-    }
-  };
-
-  const refreshWishlist = async () => {
-    try {
-      await refreshWishlistHook();
-    } catch (error) {
-      console.error('Error refreshing wishlist:', error);
-    }
-  };
 
   return (
     <AppContext.Provider value={{
@@ -166,10 +140,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       logout,
       setLanguage,
       addToSearchHistory,
-      addToFavorites,
-      removeFromFavorites,
-      refreshWishlist,
-      wishlistLoading,
     }}>
       {children}
     </AppContext.Provider>

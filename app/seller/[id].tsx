@@ -131,9 +131,9 @@ export default function SellerDetailScreen() {
     const isFavorited = isWishlisted(vehicleId);
     try {
       if (isFavorited) {
-        removeFromFavorites(vehicleId);
+        removeFromWishlist(vehicleId);
       } else {
-        addToFavorites(vehicleId);
+        addToWishlist(vehicleId);
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);
