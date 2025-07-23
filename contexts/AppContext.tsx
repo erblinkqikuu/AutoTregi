@@ -16,6 +16,63 @@ interface AppContextType {
   wishlistLoading: boolean;
 }
 
+type AppAction =
+  | { type: 'LOGIN'; payload: User }
+  | { type: 'LOGOUT' }
+  | { type: 'SET_LANGUAGE'; payload: Language }
+  | { type: 'ADD_TO_SEARCH_HISTORY'; payload: string }
+  | { type: 'SET_LOADING'; payload: boolean };
+
+const initialState: AppState = {
+  user: null,
+  isAuthenticated: false,
+  language: 'en',
+  favorites: [],
+  searchHistory: [],
+  isLoading: true,
+};
+
+const appReducer = (state: AppState, action: AppAction): AppState => {
+  switch (action.type) {
+    case 'LOGIN':
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+        isLoading: false,
+      };
+    case 'LOGOUT':
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false,
+        favorites: [],
+        searchHistory: [],
+        isLoading: false,
+      };
+    case 'SET_LANGUAGE':
+      return {
+        ...state,
+        language: action.payload,
+      };
+    case 'ADD_TO_SEARCH_HISTORY':
+      const newHistory = [action.payload, ...state.searchHistory.filter(item => item !== action.payload)].slice(0, 10);
+      return {
+        ...state,
+        searchHistory: newHistory,
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.payload,
+      };
+    default:
+      return state;
+  }
+};
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const { 
@@ -25,6 +82,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshWishlist: refreshWishlistHook,
     loading: wishlistLoading 
   } = useWishlist();
+
+  // Check for existing auth on app start
+  useEffect(() => {
+    const checkExistingAuth = () => {
+      if (Platform.OS === 'web') {
+        const accessToken = localStorage.getItem('access_token');
+        const userData = localStorage.getItem('userData');
+        
+        if (accessToken && userData) {
+          try {
+            const user = JSON.parse(userData);
+            dispatch({ type: 'LOGIN', payload: user });
+          } catch (error) {
+            console.error('Error parsing stored user data:', error);
+            dispatch({ type: 'SET_LOADING', payload: false });
+          }
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
+      } else {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    };
+
+    checkExistingAuth();
+  }, []);
+
+  const login = (user: User) => {
+    dispatch({ type: 'LOGIN', payload: user });
+  };
 
   const logout = () => {
     dispatch({ type: 'LOGOUT' });
@@ -40,6 +127,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Refresh wishlist after logout to clear it
     refreshWishlistHook();
+  };
+
+  const setLanguage = (language: Language) => {
+    dispatch({ type: 'SET_LANGUAGE', payload: language });
   };
 
   const addToSearchHistory = (query: string) => {
@@ -58,6 +149,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshWishlistHook();
   };
 
+  return (
+    <AppContext.Provider value={{
+      state,
       login,
       logout,
       setLanguage,
@@ -69,6 +163,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       wishlistLoading,
     }}>
       {children}
-    </AppContextProvider>
+    </AppContext.Provider>
   );
+};
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useAppContext must be used within an AppProvider');
+  }
+  return context;
 };
