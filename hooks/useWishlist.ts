@@ -115,10 +115,6 @@ export const useWishlist = () => {
       setWishlistedCarIds(prev => new Set([...prev, carId]));
       console.log('✅ Added to wishlist:', carId);
       
-      // Refresh wishlist to ensure consistency
-      setTimeout(() => {
-        fetchWishlist();
-      }, 500);
     } catch (err) {
       console.error('Error adding to wishlist:', err);
       throw err;
@@ -154,10 +150,6 @@ export const useWishlist = () => {
       });
       console.log('✅ Removed from wishlist:', carId);
       
-      // Refresh wishlist to ensure consistency
-      setTimeout(() => {
-        fetchWishlist();
-      }, 500);
     } catch (err) {
       console.error('Error removing from wishlist:', err);
       throw err;

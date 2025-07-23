@@ -136,12 +136,12 @@ export default function FavoritesScreen() {
     }
   }, [state.isAuthenticated, state.user?.id]);
 
-  // Refresh when wishlist changes
+  // Only refresh when wishlist count changes significantly
   useEffect(() => {
-    if (state.isAuthenticated && wishlistedCarIds.length >= 0) {
+    if (state.isAuthenticated && wishlistedCarIds.length > 0 && wishlistCars.length === 0) {
       fetchWishlistCars();
     }
-  }, [wishlistedCarIds, state.isAuthenticated]);
+  }, [wishlistedCarIds.length, state.isAuthenticated]);
   const fetchWishlistCars = async () => {
     try {
       setLoading(true);

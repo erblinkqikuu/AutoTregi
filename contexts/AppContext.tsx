@@ -138,15 +138,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addToFavorites = (vehicleId: string) => {
-    addToWishlist(vehicleId);
+    try {
+      await addToWishlist(vehicleId);
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+    }
   };
 
   const removeFromFavorites = (vehicleId: string) => {
-    removeFromWishlist(vehicleId);
+    try {
+      await removeFromWishlist(vehicleId);
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+    }
   };
 
-  const refreshWishlist = () => {
-    refreshWishlistHook();
+  const refreshWishlist = async () => {
+    try {
+      await refreshWishlistHook();
+    } catch (error) {
+      console.error('Error refreshing wishlist:', error);
+    }
   };
 
   return (
